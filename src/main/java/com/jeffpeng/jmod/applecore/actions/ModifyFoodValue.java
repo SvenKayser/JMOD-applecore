@@ -1,7 +1,7 @@
 package com.jeffpeng.jmod.applecore.actions;
 
 import com.jeffpeng.jmod.JMODRepresentation;
-import com.jeffpeng.jmod.modintegration.applecore.AppleCoreModifyFoodValues;
+import com.jeffpeng.jmod.applecore.ModifyFoodValues;
 import com.jeffpeng.jmod.primitives.BasicAction;
 
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
@@ -45,7 +45,7 @@ public class ModifyFoodValue extends BasicAction {
 	
 	@Override
 	public void execute() {
-		AppleCoreModifyFoodValues store = AppleCoreModifyFoodValues.getInstance();
+		ModifyFoodValues store = ModifyFoodValues.getInstance();
 		
 		store.addModifedFoodValue(uid, hunger, saturationModifier);
 	}
