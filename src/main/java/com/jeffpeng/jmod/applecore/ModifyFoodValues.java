@@ -1,16 +1,13 @@
 package com.jeffpeng.jmod.applecore;
 
 import java.util.HashMap;
+import java.util.Optional;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import cpw.mods.fml.common.Loader;
-import cpw.mods.fml.common.event.FMLInterModComms;
 import cpw.mods.fml.common.eventhandler.EventPriority;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.registry.GameRegistry;
-import cpw.mods.fml.common.registry.GameRegistry.UniqueIdentifier;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import squeek.applecore.api.food.FoodEvent;
 import squeek.applecore.api.food.FoodValues;
 
@@ -20,47 +17,34 @@ public class ModifyFoodValues {
     private static ModifyFoodValues instance = new ModifyFoodValues();
 
     
-	private Logger log;
     
     private ModifyFoodValues(){
-		this.log = LogManager.getLogger("AppleCore Mod Intergration");
+    	
     }
 
-    public static ModifyFoodValues getInstance(){
+    public static ModifyFoodValues getInstance() {
     	return instance;
     }
 	
-	private HashMap<String, FoodValues> foodItems = new HashMap<String, FoodValues>();
-	private static String BLACKLIST_FOOD = "BlacklistFood";
-	public static String HUNGEROVERHAUL_MODID = "HungerOverhaul";
+	private static HashMap<String, FoodValues> modifiedFoodItems = new HashMap<>();
+	
 
-	public void addModifedFoodValue(UniqueIdentifier uid, int hunger, float saturationModifier) {
-		FoodValues val = new FoodValues(hunger, saturationModifier);
-		
-		String itemStr = uid.modId + ":" + uid.name;
-		
-		foodItems.put(itemStr, val);
-		log.info("addModifedFoodValue - FoodName: {} hunger: {} saturation: {}", 
-							uid, hunger, saturationModifier);
-		
-		//Send a message, So that HungerOverhaul does not change my values back..
-		if(Loader.isModLoaded(HUNGEROVERHAUL_MODID)) {
-			FMLInterModComms.sendMessage(HUNGEROVERHAUL_MODID, BLACKLIST_FOOD, itemStr);
-		}
-
+	public void addModifedFoodValue(String foodName, FoodValues foodValues) {
+		modifiedFoodItems.put(foodName, foodValues);
 	}
 	
-	@SubscribeEvent(priority = EventPriority.NORMAL)
+	@SubscribeEvent(priority = EventPriority.HIGHEST)
     public void getModifiedFoodValues(FoodEvent.GetFoodValues event) {
-		
-		UniqueIdentifier uid = GameRegistry.findUniqueIdentifierFor(event.food.getItem());
-		String itemStr = uid.modId + ":" + uid.name;
-		
-		FoodValues val = foodItems.get(itemStr);
-		if(val != null) {
-			
-			event.foodValues = new FoodValues(val.hunger, val.saturationModifier);
-		}
+		FoodValuesLookup(event.food.getItem()).ifPresent(foodValue -> {
+			   event.foodValues = foodValue;
+		});
     }
+	
+	private Optional<FoodValues> FoodValuesLookup(Item item) {
+		return Optional.ofNullable(GameRegistry.findUniqueIdentifierFor(item))
+		        	   .map(id -> id.modId + ":" + id.name)
+		        	   .filter(itemStr -> modifiedFoodItems.containsKey(itemStr))
+		               .flatMap(itemStr -> Optional.ofNullable(modifiedFoodItems.get(itemStr)) );
+	};
 	
 }
