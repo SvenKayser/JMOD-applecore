@@ -3,13 +3,12 @@ package com.jeffpeng.jmod.applecore;
 import java.util.HashMap;
 import java.util.Optional;
 
+import net.minecraft.item.Item;
+import squeek.applecore.api.food.FoodEvent;
+import squeek.applecore.api.food.FoodValues;
 import cpw.mods.fml.common.eventhandler.EventPriority;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.registry.GameRegistry;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import squeek.applecore.api.food.FoodEvent;
-import squeek.applecore.api.food.FoodValues;
 
 
 public class ModifyFoodValues {
